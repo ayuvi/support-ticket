@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Ticket;
+use App\Comment;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
@@ -24,8 +26,13 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    public function ticket()
+    public function tickets()
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 }

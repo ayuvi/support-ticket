@@ -13,6 +13,20 @@ use Illuminate\Support\Facades\Auth;
 
 class TicketsController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+    
+    public function index()
+    {
+        $tickets = Ticket::paginate(10);
+        $categories = Category::all();
+
+        return view('tickets.index', compact('tickets','categories'));
+    }
+
     public function create()
     {
         $categories = Category::all();
@@ -62,10 +76,25 @@ class TicketsController extends Controller
     {
         $ticket = Ticket::where('ticket_id', $ticket_id)->firstOrFail();
 
+        $comments = $ticket->comments;
+
         $category = $ticket->category;
 
-        return view('tickets.show', compact('ticket','category'));
+        return view('tickets.show', compact('ticket','category','comments'));
     }
 
+    public function close($ticket_id, AppMailer $mailer)
+    {
+        $ticket = Ticket::where('ticket_id', $ticket_id)->firstOrFail();
 
+        $ticket->status = 'Closed';
+
+        $ticket->save();
+
+        $ticketOwner = $ticket->user;
+
+        $mailer->sendTicketStatusNotification($ticketOwner, $ticket);
+
+        return redirect()->back()->with("status", "The ticket has been closed.");
+    }
 }
